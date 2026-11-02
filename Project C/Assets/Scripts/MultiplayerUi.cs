@@ -1,21 +1,13 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 public class MultiplayerUi : MonoBehaviour
 {
     private void Start()
     {
-        // Subscribe after the scene objects have initialized
+        // Listen for players connecting
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-    }
-
-    private void OnDestroy()
-    {
-        // Stop listening when this object is destroyed
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-        }
     }
 
     public void StartHost()
@@ -30,18 +22,43 @@ public class MultiplayerUi : MonoBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        // Find the player that just connected
-        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+        // Only the server assigns spawn positions
+        if (!NetworkManager.Singleton.IsServer)
         {
-            // Give the host and client different starting positions
+            return;
+        }
+
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(
+            clientId, out var client))
+        {
+            Vector3 spawnPosition;
+
             if (clientId == NetworkManager.ServerClientId)
             {
-                client.PlayerObject.transform.position = new Vector3(-24, 1, 0);
+                spawnPosition = new Vector3(-24, 1, 0);
             }
             else
             {
-                client.PlayerObject.transform.position = new Vector3(-22, 1, 0);
+                spawnPosition = new Vector3(-22, 1, 0);
             }
+
+            NetworkTransform networkTransform =
+                client.PlayerObject.GetComponent<NetworkTransform>();
+
+            networkTransform.Teleport(
+                spawnPosition,
+                Quaternion.identity,
+                Vector3.one
+            );
+            Debug.Log("Assigned spawn position: " + spawnPosition);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
         }
     }
 }
