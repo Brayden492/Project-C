@@ -11,71 +11,45 @@ public class PlayerMovement : NetworkBehaviour
 
     private CharacterController controller;
 
-    // Stores the movement input received by the server
+    // Stores keyboard input received by the server
     private Vector2 movementInput;
+
+    private float sendRate = 1f / 30f;
+    private float sendTimer;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
     }
 
-    public override void OnNetworkSpawn()
-    {
-        // Only the server assigns spawn positions
-        if (!IsServer)
-        {
-            return;
-        }
-
-        Vector3 spawnPosition;
-
-        // Host spawns on the left
-        if (OwnerClientId == NetworkManager.ServerClientId)
-        {
-            spawnPosition = new Vector3(-24, 1, 0);
-        }
-        // Client spawns on the right
-        else
-        {
-            spawnPosition = new Vector3(-22, 1, 0);
-        }
-
-        // Get the NetworkTransform component
-        NetworkTransform networkTransform = GetComponent<NetworkTransform>();
-
-        // Assign the networked spawn position
-        networkTransform.Teleport(
-            spawnPosition,
-            Quaternion.identity,
-            Vector3.one
-        );
-    }
-
-    private float sendRate = 1f / 30f;
-    private float sendTimer;
-
     private void Update()
     {
+        // Only read input for the local player
         if (!IsOwner)
         {
             return;
         }
 
+        // Read keyboard input
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        Vector2 input = new Vector2(horizontal, vertical);
+
+        // Prevent faster diagonal movement
+        input = Vector2.ClampMagnitude(input, 1f);
+
+        // Send input to the server 30 times per second
         sendTimer += Time.deltaTime;
 
         if (sendTimer >= sendRate)
         {
-            float horizontal = Input.GetAxisRaw("Horizontal");
-            float vertical = Input.GetAxisRaw("Vertical");
-
-            Vector2 input = new Vector2(horizontal, vertical);
-
             SendMovementServerRpc(input);
-
             sendTimer = 0f;
         }
     }
 
+    // Receive keyboard input on the server
     [ServerRpc]
     private void SendMovementServerRpc(Vector2 input)
     {
@@ -90,17 +64,21 @@ public class PlayerMovement : NetworkBehaviour
             return;
         }
 
-        // Convert input into a 3D movement direction
-        Vector3 movement = new Vector3(
-            movementInput.x,
-            0f,
-            movementInput.y
-        );
+        // Get directions based on where the player is facing
+        Vector3 forward = transform.forward;
+        Vector3 right = transform.right;
 
-        // Only move if the player is actually providing input
+        // Calculate movement relative to player rotation
+        Vector3 movement =
+            forward * movementInput.y +
+            right * movementInput.x;
+
+        // Only move when there is input
         if (movement.sqrMagnitude > 0f)
         {
-            controller.Move(movement * moveSpeed * Time.fixedDeltaTime);
+            controller.Move(
+                movement * moveSpeed * Time.fixedDeltaTime
+            );
         }
     }
 }
