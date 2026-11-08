@@ -86,6 +86,13 @@ public class PlayerMovement : NetworkBehaviour
     [ServerRpc]
     private void JumpServerRpc()
     {
+        MatchManager matchManager = FindFirstObjectByType<MatchManager>();
+
+        if (matchManager != null && !matchManager.canMove.Value)
+        {
+            return;
+        }
+
         jumpRequested = true;
     }
 
@@ -94,6 +101,20 @@ public class PlayerMovement : NetworkBehaviour
         // Only the server moves the actual player objects
         if (!IsServer)
         {
+            return;
+        }
+
+        // Stop player movement during kickoff countdown
+        MatchManager matchManager = FindFirstObjectByType<MatchManager>();
+
+        if (matchManager != null && !matchManager.canMove.Value)
+        {
+            movementInput = Vector2.zero;
+            runInput = false;
+            verticalVelocity = 0f;
+
+            playerStamina.SetRunning(false);
+
             return;
         }
 
@@ -181,6 +202,12 @@ public class PlayerMovement : NetworkBehaviour
     [ServerRpc]
     private void KickBallServerRpc()
     {
+        MatchManager matchManager = FindFirstObjectByType<MatchManager>();
+
+        if (matchManager != null && !matchManager.canMove.Value)
+        {
+            return;
+        }
 
         // Find the soccer ball
         SoccerBall ball = FindFirstObjectByType<SoccerBall>();

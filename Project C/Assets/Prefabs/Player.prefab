@@ -326,7 +326,7 @@ MonoBehaviour:
   kickDistance: 5
   runSpeed: 20
   jumpHeight: 2
-  gravity: 0
+  gravity: -20
 --- !u!114 &9218249376684942946
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -51,7 +51,7 @@ public class MultiplayerUi : MonoBehaviour
 
         if (spawnPoint == null || playerPrefab == null)
         {
-            Debug.LogError("Missing spawn point or player prefab!");
+            Debug.LogError("Missing spawn point or player prefab");
             return;
         }
 
@@ -69,6 +69,14 @@ public class MultiplayerUi : MonoBehaviour
             "Manually spawned player " + clientId +
             " at " + player.transform.position
         );
+
+        MatchManager matchManager =
+        FindFirstObjectByType<MatchManager>();
+
+        if (matchManager != null)
+        {
+            matchManager.TryStartMatch();
+        }
     }
 
     private void OnDestroy()
