@@ -129,6 +129,7 @@ GameObject:
   - component: {fileID: 145054610149117830}
   - component: {fileID: 9218249376684942946}
   - component: {fileID: 1930830346890956625}
+  - component: {fileID: -8511213889462161874}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -222,7 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3405005581
+  GlobalObjectIdHash: 510261498
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -321,8 +322,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   ShowTopMostFoldoutHeaderGroup: 1
-  moveSpeed: 5
-  rotationSpeed: 10
+  moveSpeed: 10
+  kickDistance: 5
+  runSpeed: 20
+  jumpHeight: 2
+  gravity: 0
 --- !u!114 &9218249376684942946
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,6 +355,29 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   cameraPivot: {fileID: 8808241182282947240}
   mouseSensitivity: 200
+--- !u!114 &-8511213889462161874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5893887499521592314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0840bc05f2493364a9dba0b66cc1024b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStamina
+  ShowTopMostFoldoutHeaderGroup: 1
+  maxStamina: 100
+  kickCost: 20
+  runCostPerSecond: 15
+  regenerationPerSecond: 15
+  regenerationDelay: 2
+  currentStamina:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 100
 --- !u!1 &6182215864878535312
 GameObject:
   m_ObjectHideFlags: 0

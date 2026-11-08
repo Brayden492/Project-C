@@ -4,9 +4,16 @@ using UnityEngine;
 
 public class MultiplayerUi : MonoBehaviour
 {
+    public Transform playerSpawn1;
+    public Transform playerSpawn2;
+
+    // Assign the same Player prefab used by NetworkManager
+    public NetworkObject playerPrefab;
+
     private void Start()
     {
-        // Listen for players connecting
+        NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
+
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
 
@@ -20,38 +27,48 @@ public class MultiplayerUi : MonoBehaviour
         NetworkManager.Singleton.StartClient();
     }
 
+    private void ApprovalCheck(
+        NetworkManager.ConnectionApprovalRequest request,
+        NetworkManager.ConnectionApprovalResponse response)
+    {
+        // Approve the connection, but don't automatically create a player
+        response.Approved = true;
+        response.CreatePlayerObject = false;
+        response.Pending = false;
+    }
+
     private void OnClientConnected(ulong clientId)
     {
-        // Only the server assigns spawn positions
         if (!NetworkManager.Singleton.IsServer)
         {
             return;
         }
 
-        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(
-            clientId, out var client))
+        // Choose the correct spawn point
+        Transform spawnPoint = clientId == NetworkManager.ServerClientId
+            ? playerSpawn1
+            : playerSpawn2;
+
+        if (spawnPoint == null || playerPrefab == null)
         {
-            Vector3 spawnPosition;
-
-            if (clientId == NetworkManager.ServerClientId)
-            {
-                spawnPosition = new Vector3(-24, 1, 0);
-            }
-            else
-            {
-                spawnPosition = new Vector3(-22, 1, 0);
-            }
-
-            NetworkTransform networkTransform =
-                client.PlayerObject.GetComponent<NetworkTransform>();
-
-            networkTransform.Teleport(
-                spawnPosition,
-                Quaternion.identity,
-                Vector3.one
-            );
-            Debug.Log("Assigned spawn position: " + spawnPosition);
+            Debug.LogError("Missing spawn point or player prefab!");
+            return;
         }
+
+        // Create the player directly at the spawn point
+        NetworkObject player = Instantiate(
+            playerPrefab,
+            spawnPoint.position,
+            spawnPoint.rotation
+        );
+
+        // Spawn the player as the connected client's PlayerObject
+        player.SpawnAsPlayerObject(clientId);
+
+        Debug.Log(
+            "Manually spawned player " + clientId +
+            " at " + player.transform.position
+        );
     }
 
     private void OnDestroy()

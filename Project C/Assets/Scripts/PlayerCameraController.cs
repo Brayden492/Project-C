@@ -8,6 +8,10 @@ public class PlayerCameraController : NetworkBehaviour
     public float mouseSensitivity = 200f;
 
     private float verticalRotation;
+    private float horizontalRotation;
+
+    private float sendRate = 1f / 30f;
+    private float sendTimer;
 
     public override void OnNetworkSpawn()
     {
@@ -28,6 +32,8 @@ public class PlayerCameraController : NetworkBehaviour
 
         if (IsOwner)
         {
+            horizontalRotation = transform.eulerAngles.y;
+
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
@@ -38,14 +44,12 @@ public class PlayerCameraController : NetworkBehaviour
         if (!IsOwner)
             return;
 
-        // Unlock mouse with Escape
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        // Lock mouse again when clicking
         if (Input.GetMouseButtonDown(0) &&
             Cursor.lockState != CursorLockMode.Locked)
         {
@@ -56,21 +60,35 @@ public class PlayerCameraController : NetworkBehaviour
         if (Cursor.lockState != CursorLockMode.Locked)
             return;
 
-        // Read mouse movement
         float mouseX = Input.GetAxis("Mouse X") *
                        mouseSensitivity * Time.deltaTime;
 
         float mouseY = Input.GetAxis("Mouse Y") *
                        mouseSensitivity * Time.deltaTime;
 
-        // Rotate the player horizontally
-        transform.Rotate(Vector3.up * mouseX);
+        // Update horizontal rotation
+        horizontalRotation += mouseX;
 
-        // Rotate the camera vertically
+        // Update vertical camera rotation
         verticalRotation -= mouseY;
         verticalRotation = Mathf.Clamp(verticalRotation, -45f, 60f);
 
         cameraPivot.localRotation =
             Quaternion.Euler(verticalRotation, 0f, 0f);
+
+        // Send horizontal rotation to the server
+        sendTimer += Time.deltaTime;
+
+        if (sendTimer >= sendRate)
+        {
+            SetPlayerRotationServerRpc(horizontalRotation);
+            sendTimer = 0f;
+        }
+    }
+
+    [ServerRpc]
+    private void SetPlayerRotationServerRpc(float yaw)
+    {
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
     }
 }
