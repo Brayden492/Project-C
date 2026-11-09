@@ -59,4 +59,30 @@ public class SoccerBall : NetworkBehaviour
 
         rb.AddForce(kickDirection, ForceMode.Impulse);
     }
+
+    public void ExplodeFrom(
+    Vector3 explosionOrigin,
+    float explosionForce,
+    float upwardForce)
+    {
+        // Only the server applies the explosion
+        if (!IsServer)
+        {
+            return;
+        }
+
+        // Calculate the direction away from the explosion
+        Vector3 direction = rb.worldCenterOfMass - explosionOrigin;
+
+        // Keep the horizontal direction
+        direction.y = 0f;
+
+        direction.Normalize();
+
+        // Apply the explosion force
+        Vector3 explosion = direction * explosionForce
+                            + Vector3.up * upwardForce;
+
+        rb.AddForce(explosion, ForceMode.Impulse);
+    }
 }
