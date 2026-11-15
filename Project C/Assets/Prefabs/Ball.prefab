@@ -247,6 +247,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoccerBall
   ShowTopMostFoldoutHeaderGroup: 1
-  playerPushForce: 1
+  playerPushForce: 0.25
   kickForce: 10
   kickLift: 1
+  chaosKickMultiplier: 5
+  chaosPlayerPushMultiplier: 4

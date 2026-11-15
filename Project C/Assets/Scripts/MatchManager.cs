@@ -37,6 +37,20 @@ public class MatchManager : NetworkBehaviour
             NetworkVariableWritePermission.Server
         );
 
+    public NetworkVariable<int> connectedPlayerCount =
+    new NetworkVariable<int>(
+        0,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public NetworkVariable<int> selectedGameMode =
+    new NetworkVariable<int>(
+        0,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
     public int goalsToWin = 5;
     // Player spawn locations
     public Transform playerSpawn1;
@@ -53,6 +67,18 @@ public class MatchManager : NetworkBehaviour
 
     // Prevents the same goal from awarding multiple points
     private bool goalBeingProcessed = false;
+
+    public AudioManager audioManager;
+    public GoalCelebration goalCelebration;
+
+    private void UpdateCursor(bool unlocked)
+    {
+        Cursor.lockState = unlocked
+            ? CursorLockMode.None
+            : CursorLockMode.Locked;
+
+        Cursor.visible = unlocked;
+    }
 
     public void ScoreGoal(int playerWhoScores)
     {
@@ -85,6 +111,13 @@ public class MatchManager : NetworkBehaviour
         {
             matchOver.Value = true;
             canMove.Value = false;
+            UpdateCursor(true);
+
+            // Stop background music
+            if (audioManager != null)
+            {
+                audioManager.StopMusic();
+            }
 
             Debug.Log(
                 player1Score.Value >= goalsToWin
@@ -203,6 +236,55 @@ public class MatchManager : NetworkBehaviour
         StartCoroutine(StartKickoffCountdown());
     }
 
+    public void RequestReplay()
+    {
+        Debug.Log("Replay button clicked!");
+
+        if (IsServer)
+        {
+            Debug.Log("This player is the host.");
+            ReplayMatch();
+        }
+        else
+        {
+            Debug.Log("Sending replay request to host.");
+            ReplayMatchRpc();
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void ReplayMatchRpc()
+    {
+        Debug.Log("Host received replay request!");
+        ReplayMatch();
+    }
+
+    private void ReplayMatch()
+    {
+        Debug.Log("ReplayMatch started!");
+
+        if (!IsServer || !matchOver.Value)
+        {
+            Debug.LogWarning("Replay blocked. IsServer: " + IsServer +
+                             " MatchOver: " + matchOver.Value);
+            return;
+        }
+
+        player1Score.Value = 0;
+        player2Score.Value = 0;
+
+        matchOver.Value = false;
+        UpdateCursor(false);
+        goalBeingProcessed = false;
+
+
+        ResetPositions();
+
+        StartCoroutine(StartKickoffCountdown());
+
+        Debug.Log("Replaying match!");
+    }
+
     private IEnumerator StartKickoffCountdown()
     {
         // Lock both players
@@ -232,9 +314,94 @@ public class MatchManager : NetworkBehaviour
         // Allow players to move
         canMove.Value = true;
 
+        // Start background music
+        if (audioManager != null)
+        {
+            audioManager.StartMusic();
+        }
+
+
         Debug.Log("KICKOFF!");
 
         // Allow another goal to be processed
         goalBeingProcessed = false;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        // Listen for goals scored by either player
+        player1Score.OnValueChanged += HandlePlayer1ScoreChanged;
+        player2Score.OnValueChanged += HandlePlayer2ScoreChanged;
+
+        // Only the server tracks connected players
+        if (!IsServer)
+        {
+            return;
+        }
+
+        // Listen for players joining and leaving
+        NetworkManager.Singleton.OnClientConnectedCallback += UpdatePlayerCount;
+        NetworkManager.Singleton.OnClientDisconnectCallback += UpdatePlayerCount;
+
+        // Set the initial count
+        connectedPlayerCount.Value =
+            NetworkManager.Singleton.ConnectedClientsIds.Count;
+
+        Debug.Log("Initial player count: " +
+            connectedPlayerCount.Value);
+    }
+
+    private void UpdatePlayerCount(ulong clientId)
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        connectedPlayerCount.Value =
+            NetworkManager.Singleton.ConnectedClientsIds.Count;
+
+        Debug.Log("Connected players: " + connectedPlayerCount.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (NetworkManager.Singleton != null && IsServer)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= UpdatePlayerCount;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= UpdatePlayerCount;
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void RequestHostCloseRoomRpc()
+    {
+        if (!IsServer) return;
+
+        Debug.Log("A player left. Closing the room for everyone.");
+
+        OnlineSessionManager sessionManager =
+            FindFirstObjectByType<OnlineSessionManager>();
+
+        if (sessionManager != null)
+        {
+            sessionManager.LeaveRoom();
+        }
+    }
+
+    private void HandlePlayer1ScoreChanged(int oldScore, int newScore)
+    {
+        if (newScore > oldScore && goalCelebration != null)
+        {
+            goalCelebration.ShowGoal(1);
+        }
+    }
+
+    private void HandlePlayer2ScoreChanged(int oldScore, int newScore)
+    {
+        if (newScore > oldScore && goalCelebration != null)
+        {
+            goalCelebration.ShowGoal(2);
+        }
     }
 }

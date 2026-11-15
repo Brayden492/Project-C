@@ -6,6 +6,7 @@ public class VictoryUI : MonoBehaviour
     public MatchManager matchManager;
     public GameObject victoryPanel;
     public TextMeshProUGUI victoryText;
+    private bool hasLeftMatch = false;
 
     private void Start()
     {
@@ -20,20 +21,45 @@ public class VictoryUI : MonoBehaviour
             return;
         }
 
-        // Check whether the match has ended
-        if (matchManager.matchOver.Value)
+        // If the match is not over, hide the screen
+        // and prepare for the next match.
+        if (!matchManager.matchOver.Value)
         {
-            victoryPanel.SetActive(true);
+            hasLeftMatch = false;
+            victoryPanel.SetActive(false);
+            return;
+        }
 
-            // Display the winner
-            if (matchManager.player1Score.Value >= matchManager.goalsToWin)
-            {
-                victoryText.text = "PLAYER 1 WINS!";
-            }
-            else
-            {
-                victoryText.text = "PLAYER 2 WINS!";
-            }
+        // Don't show the victory screen if we left the match.
+        if (hasLeftMatch)
+        {
+            victoryPanel.SetActive(false);
+            return;
+        }
+
+        // Show the victory screen.
+        victoryPanel.SetActive(true);
+
+        if (matchManager.player1Score.Value >= matchManager.goalsToWin)
+        {
+            victoryText.text = "PLAYER 1 WINS!";
+        }
+        else
+        {
+            victoryText.text = "PLAYER 2 WINS!";
         }
     }
+
+    public void HideVictoryScreen()
+    {
+        hasLeftMatch = true;
+        victoryPanel.SetActive(false);
+    }
+
+    public void ResetVictoryScreen()
+    {
+        hasLeftMatch = false;
+        victoryPanel.SetActive(false);
+    }
 }
+

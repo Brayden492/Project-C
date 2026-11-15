@@ -7,83 +7,77 @@ public class MultiplayerUi : MonoBehaviour
     public Transform playerSpawn1;
     public Transform playerSpawn2;
 
-    // Assign the same Player prefab used by NetworkManager
     public NetworkObject playerPrefab;
 
     private void Start()
     {
         NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
-
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-    }
-
-    public void StartHost()
-    {
-        NetworkManager.Singleton.StartHost();
-    }
-
-    public void StartClient()
-    {
-        NetworkManager.Singleton.StartClient();
     }
 
     private void ApprovalCheck(
         NetworkManager.ConnectionApprovalRequest request,
         NetworkManager.ConnectionApprovalResponse response)
     {
-        // Approve the connection, but don't automatically create a player
         response.Approved = true;
         response.CreatePlayerObject = false;
         response.Pending = false;
     }
 
-    private void OnClientConnected(ulong clientId)
+    public void StartMatch()
     {
+        // Only the host can start the match
         if (!NetworkManager.Singleton.IsServer)
         {
+            Debug.Log("Only the host can start the match!");
             return;
         }
 
-        // Choose the correct spawn point
-        Transform spawnPoint = clientId == NetworkManager.ServerClientId
-            ? playerSpawn1
-            : playerSpawn2;
-
-        if (spawnPoint == null || playerPrefab == null)
+        // Make sure both players are connected
+        if (NetworkManager.Singleton.ConnectedClientsList.Count < 2)
         {
-            Debug.LogError("Missing spawn point or player prefab");
+            Debug.Log("Waiting for the second player!");
             return;
         }
 
-        // Create the player directly at the spawn point
-        NetworkObject player = Instantiate(
-            playerPrefab,
-            spawnPoint.position,
-            spawnPoint.rotation
-        );
+        // Spawn each connected player's character
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            // Don't spawn a duplicate player
+            if (client.PlayerObject != null)
+                continue;
 
-        // Spawn the player as the connected client's PlayerObject
-        player.SpawnAsPlayerObject(clientId);
+            Transform spawnPoint = client.ClientId == NetworkManager.ServerClientId
+                ? playerSpawn1
+                : playerSpawn2;
 
-        Debug.Log(
-            "Manually spawned player " + clientId +
-            " at " + player.transform.position
-        );
+            if (spawnPoint == null || playerPrefab == null)
+            {
+                Debug.LogError("Missing spawn point or player prefab!");
+                return;
+            }
 
+            NetworkObject player = Instantiate(
+                playerPrefab,
+                spawnPoint.position,
+                spawnPoint.rotation
+            );
+
+            player.SpawnAsPlayerObject(client.ClientId);
+
+            Debug.Log("Spawned player " + client.ClientId);
+        }
+
+        // Start the actual match
         MatchManager matchManager =
-        FindFirstObjectByType<MatchManager>();
+            FindFirstObjectByType<MatchManager>();
 
         if (matchManager != null)
         {
             matchManager.TryStartMatch();
         }
-    }
-
-    private void OnDestroy()
-    {
-        if (NetworkManager.Singleton != null)
+        else
         {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            Debug.LogError("MatchManager not found!");
         }
     }
 }

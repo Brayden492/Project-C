@@ -13,9 +13,12 @@ public class PlayerCameraController : NetworkBehaviour
     private float sendRate = 1f / 30f;
     private float sendTimer;
 
+    private MatchManager matchManager;
+
     public override void OnNetworkSpawn()
     {
         Camera playerCamera = GetComponentInChildren<Camera>();
+
 
         if (playerCamera != null)
         {
@@ -32,6 +35,8 @@ public class PlayerCameraController : NetworkBehaviour
 
         if (IsOwner)
         {
+            mouseSensitivity = PlayerPrefs.GetFloat("Sensitivity", 200f);
+            matchManager = FindFirstObjectByType<MatchManager>();
             horizontalRotation = transform.eulerAngles.y;
 
             Cursor.lockState = CursorLockMode.Locked;
@@ -51,7 +56,8 @@ public class PlayerCameraController : NetworkBehaviour
         }
 
         if (Input.GetMouseButtonDown(0) &&
-            Cursor.lockState != CursorLockMode.Locked)
+            Cursor.lockState != CursorLockMode.Locked &&
+            (matchManager == null || !matchManager.matchOver.Value))
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;

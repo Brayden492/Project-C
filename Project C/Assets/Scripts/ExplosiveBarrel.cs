@@ -4,10 +4,15 @@ using System.Collections;
 
 public class ExplosiveBarrel : NetworkBehaviour
 {
+    public ParticleSystem explosionEffect;
+
     public float explosionForce = 25f;
     public float upwardForce = 10f;
 
     public float explosionCooldown = 2f;
+
+    [Header("Chaos Mode Settings")]
+    public float chaosExplosionMultiplier = 3f;
 
     // Whether the barrel can currently explode
     private NetworkVariable<bool> isAvailable =
@@ -54,6 +59,12 @@ public class ExplosiveBarrel : NetworkBehaviour
         // Show or hide the barrel
         foreach (Renderer rend in barrelRenderers)
         {
+            // Don't hide the particle effect during cooldown
+            if (rend is ParticleSystemRenderer)
+            {
+                continue;
+            }
+
             rend.enabled = available;
         }
     }
@@ -74,12 +85,27 @@ public class ExplosiveBarrel : NetworkBehaviour
             return;
         }
 
+        // Determine the explosion multiplier
+        float multiplier = 1f;
+
+        MatchManager matchManager =
+            FindFirstObjectByType<MatchManager>();
+
+        if (matchManager != null &&
+            matchManager.selectedGameMode.Value == 1)
+        {
+            multiplier = chaosExplosionMultiplier;
+        }
+
         // Explode the ball
         ball.ExplodeFrom(
             transform.position,
-            explosionForce,
-            upwardForce
+            explosionForce * multiplier,
+            upwardForce * multiplier
         );
+
+        // Play the visual explosion for everyone
+        PlayExplosionEffectRpc();
 
         Debug.Log("EXPLOSION!");
 
@@ -100,5 +126,14 @@ public class ExplosiveBarrel : NetworkBehaviour
         isAvailable.Value = true;
 
         Debug.Log("Barrel ready!");
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void PlayExplosionEffectRpc()
+    {
+        if (explosionEffect != null)
+        {
+            explosionEffect.Play();
+        }
     }
 }

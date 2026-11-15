@@ -6,11 +6,29 @@ public class SoccerBall : NetworkBehaviour
 {
     private Rigidbody rb;
 
+    private float GetChaosMultiplier(float chaosMultiplier)
+    {
+        MatchManager matchManager =
+            FindFirstObjectByType<MatchManager>();
+
+        if (matchManager != null &&
+            matchManager.selectedGameMode.Value == 1)
+        {
+            return chaosMultiplier;
+        }
+
+        return 1f;
+    }
+
     public float playerPushForce = 4f;
 
     // Controls the strength of an intentional kick
     public float kickForce = 6f;
     public float kickLift = 1.5f;
+
+    [Header("Chaos Mode Settings")]
+    public float chaosKickMultiplier = 3f;
+    public float chaosPlayerPushMultiplier = 3f;
 
     private void Awake()
     {
@@ -34,11 +52,13 @@ public class SoccerBall : NetworkBehaviour
 
         direction.Normalize();
 
+        float multiplier = GetChaosMultiplier(chaosPlayerPushMultiplier);
+
         // Apply a push based on the player's movement speed
         rb.AddForce(
-            direction * playerPushForce * playerSpeed,
-            ForceMode.Impulse
-        );
+         direction * playerPushForce * playerSpeed * multiplier,
+         ForceMode.Impulse
+         );
     }
 
     public void KickBall(Vector3 direction)
@@ -53,9 +73,13 @@ public class SoccerBall : NetworkBehaviour
         direction.y = 0f;
         direction.Normalize();
 
-        // Apply forward force and a little upward force
+        // Get the Chaos multiplier
+        float multiplier = GetChaosMultiplier(chaosKickMultiplier);
+
+        // Apply forward force and upward force
         Vector3 kickDirection =
-            direction * kickForce + Vector3.up * kickLift;
+            direction * kickForce * multiplier +
+            Vector3.up * kickLift * multiplier;
 
         rb.AddForce(kickDirection, ForceMode.Impulse);
     }
