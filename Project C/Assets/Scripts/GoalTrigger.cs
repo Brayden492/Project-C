@@ -6,6 +6,7 @@ public class GoalTrigger : MonoBehaviour
     public int playerWhoScores;
     public MatchManager matchManager;
 
+    // Detects when the soccer ball enters a goal and awards the point to the appropriate player
     private void OnTriggerEnter(Collider other)
     {
         // Only the server handles scoring

@@ -8,6 +8,7 @@ public class MenuManager : MonoBehaviour
     public GameObject lobbyPanel;
     public GameObject settingsPanel;
     public MatchManager matchManager;
+    public GameObject creditsPanel;
     public int selectedGameMode = 0;
 
     private void Start()
@@ -15,6 +16,7 @@ public class MenuManager : MonoBehaviour
         ShowMainMenu();
     }
 
+    // Hides all menu panels so only the selected menu is visible
     private void HideAllPanels()
     {
         mainMenuPanel.SetActive(false);
@@ -22,6 +24,7 @@ public class MenuManager : MonoBehaviour
         multiplayerPanel.SetActive(false);
         lobbyPanel.SetActive(false);
         settingsPanel.SetActive(false);
+        creditsPanel.SetActive(false);
     }
 
     public void ShowMainMenu()
@@ -54,11 +57,17 @@ public class MenuManager : MonoBehaviour
         settingsPanel.SetActive(true);
     }
 
+    public void ShowCredits()
+    {
+        HideAllPanels();
+        creditsPanel.SetActive(true);
+    }
+
     public void SelectNormalMode()
     {
         selectedGameMode = 0;
 
-        Debug.Log("Selected game mode: Normal");
+        //Debug.Log("Selected game mode: Normal");
 
         ShowMultiplayer();
     }
@@ -67,11 +76,12 @@ public class MenuManager : MonoBehaviour
     {
         selectedGameMode = 1;
 
-        Debug.Log("Selected game mode: Chaos");
+        //Debug.Log("Selected game mode: Chaos");
 
         ShowMultiplayer();
     }
 
+    // Hide the menus while the kickoff countdown is active and gameplay is starting
     private void Update()
     {
         if (matchManager != null &&

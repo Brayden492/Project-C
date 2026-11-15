@@ -19,7 +19,7 @@ public class PlayerCameraController : NetworkBehaviour
     {
         Camera playerCamera = GetComponentInChildren<Camera>();
 
-
+        // Only the owning player should have an active camera and audio listener
         if (playerCamera != null)
         {
             playerCamera.enabled = IsOwner;
@@ -92,6 +92,8 @@ public class PlayerCameraController : NetworkBehaviour
         }
     }
 
+
+    // Send the players horizontal rotation to the server so it can be synchronized across the network
     [ServerRpc]
     private void SetPlayerRotationServerRpc(float yaw)
     {

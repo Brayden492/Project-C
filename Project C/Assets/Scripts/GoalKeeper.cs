@@ -1,6 +1,8 @@
 using UnityEngine;
 using Unity.Netcode;
 
+
+// Controls an object that moves back and forth along a set path
 public class GoalKeeper : NetworkBehaviour
 {
     public float movementDistance = 3f;
@@ -19,7 +21,7 @@ public class GoalKeeper : NetworkBehaviour
         // Remember the starting position
         startingPosition = transform.position;
 
-        // Move along the object's right direction
+        // Move along the objects right direction
         movementDirection = transform.right;
     }
 
@@ -31,7 +33,7 @@ public class GoalKeeper : NetworkBehaviour
             return;
         }
 
-        // Calculate smooth back-and-forth movement
+        // Calculate smooth back and forth movement
         float movement = Mathf.Sin(Time.time * movementSpeed)
                          * movementDistance;
 

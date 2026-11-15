@@ -6,7 +6,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        // Load the player's saved volume
+        // Load the players saved volume
         musicSource.volume = PlayerPrefs.GetFloat("Volume", 1f);
 
         // Make sure music starts turned off

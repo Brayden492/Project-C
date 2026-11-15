@@ -1,6 +1,8 @@
 using TMPro;
 using UnityEngine;
 
+
+// Displays the winner when the match ends and manages the victory screens visibility
 public class VictoryUI : MonoBehaviour
 {
     public MatchManager matchManager;
@@ -21,8 +23,7 @@ public class VictoryUI : MonoBehaviour
             return;
         }
 
-        // If the match is not over, hide the screen
-        // and prepare for the next match.
+        // If the match is not over hide the screen and prepare for the next match.
         if (!matchManager.matchOver.Value)
         {
             hasLeftMatch = false;
@@ -30,7 +31,7 @@ public class VictoryUI : MonoBehaviour
             return;
         }
 
-        // Don't show the victory screen if we left the match.
+        // Dont show the victory screen if we left the match.
         if (hasLeftMatch)
         {
             victoryPanel.SetActive(false);

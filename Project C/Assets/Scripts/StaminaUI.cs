@@ -10,7 +10,7 @@ public class StaminaUI : MonoBehaviour
 
     private void Update()
     {
-        // Find the local player's stamina
+        // Find the local players stamina
         if (playerStamina == null)
         {
             PlayerStamina[] players =

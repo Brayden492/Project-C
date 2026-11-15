@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 
+// Displays the kickoff countdown to both players
 public class CountdownUI : MonoBehaviour
 {
     public MatchManager matchManager;

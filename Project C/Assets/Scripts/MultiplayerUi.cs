@@ -14,6 +14,8 @@ public class MultiplayerUi : MonoBehaviour
         NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
     }
 
+    // Controls whether incoming players are allowed to join
+    // Players are approved here but their characters are spawned manually when the match starts
     private void ApprovalCheck(
         NetworkManager.ConnectionApprovalRequest request,
         NetworkManager.ConnectionApprovalResponse response)
@@ -28,21 +30,21 @@ public class MultiplayerUi : MonoBehaviour
         // Only the host can start the match
         if (!NetworkManager.Singleton.IsServer)
         {
-            Debug.Log("Only the host can start the match!");
+            Debug.Log("Only the host can start the match");
             return;
         }
 
         // Make sure both players are connected
         if (NetworkManager.Singleton.ConnectedClientsList.Count < 2)
         {
-            Debug.Log("Waiting for the second player!");
+            Debug.Log("Waiting for the second player");
             return;
         }
 
-        // Spawn each connected player's character
+        // Spawn each connected players character
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            // Don't spawn a duplicate player
+            // Dont spawn a duplicate player
             if (client.PlayerObject != null)
                 continue;
 
@@ -52,7 +54,7 @@ public class MultiplayerUi : MonoBehaviour
 
             if (spawnPoint == null || playerPrefab == null)
             {
-                Debug.LogError("Missing spawn point or player prefab!");
+                Debug.LogError("Missing spawn point or player prefab");
                 return;
             }
 
@@ -64,7 +66,7 @@ public class MultiplayerUi : MonoBehaviour
 
             player.SpawnAsPlayerObject(client.ClientId);
 
-            Debug.Log("Spawned player " + client.ClientId);
+            //Debug.Log("Spawned player " + client.ClientId);
         }
 
         // Start the actual match
@@ -77,7 +79,7 @@ public class MultiplayerUi : MonoBehaviour
         }
         else
         {
-            Debug.LogError("MatchManager not found!");
+            Debug.LogError("MatchManager not found");
         }
     }
 }

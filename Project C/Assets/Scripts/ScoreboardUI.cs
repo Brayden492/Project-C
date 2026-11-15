@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 
+// Displays both players current scores on the scoreboard
 public class ScoreboardUI : MonoBehaviour
 {
     public MatchManager matchManager;
@@ -13,7 +14,7 @@ public class ScoreboardUI : MonoBehaviour
             return;
         }
 
-        // Get both players' scores
+        // Get both players scores
         int player1 = matchManager.player1Score.Value;
         int player2 = matchManager.player2Score.Value;
 

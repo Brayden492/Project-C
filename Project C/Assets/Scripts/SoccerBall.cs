@@ -84,6 +84,8 @@ public class SoccerBall : NetworkBehaviour
         rb.AddForce(kickDirection, ForceMode.Impulse);
     }
 
+
+    // Applies an explosion force to the ball pushing it away from the explosions origin
     public void ExplodeFrom(
     Vector3 explosionOrigin,
     float explosionForce,

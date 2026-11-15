@@ -96,6 +96,7 @@ public class PlayerMovement : NetworkBehaviour
         jumpRequested = true;
     }
 
+    // The server handles all player movement so both players stay synchronized
     private void FixedUpdate()
     {
         // Only the server moves the actual player objects
@@ -175,6 +176,7 @@ public class PlayerMovement : NetworkBehaviour
         controller.Move(movement * Time.fixedDeltaTime);
     }
 
+    // Allows players to push the ball by running into it
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         // Only the server handles ball collisions

@@ -56,7 +56,7 @@ public class MatchManager : NetworkBehaviour
     public Transform playerSpawn1;
     public Transform playerSpawn2;
 
-    // Ball's starting location
+    // Balls starting location
     public Transform ballSpawnPoint;
 
     // The ball prefab used to create the match ball
@@ -100,10 +100,10 @@ public class MatchManager : NetworkBehaviour
             player2Score.Value++;
         }
 
-        Debug.Log(
-            "Score: Player 1 = " + player1Score.Value +
-            " | Player 2 = " + player2Score.Value
-        );
+        //Debug.Log(
+        //    "Score: Player 1 = " + player1Score.Value +
+        //    " | Player 2 = " + player2Score.Value
+        //);
 
         // Check whether someone has won
         if (player1Score.Value >= goalsToWin ||
@@ -135,6 +135,7 @@ public class MatchManager : NetworkBehaviour
         StartCoroutine(StartKickoffCountdown());
     }
 
+    // Returns both players and the ball to their starting positions after a goal or replay
     private void ResetPositions()
     {
         // Find both connected players
@@ -231,23 +232,23 @@ public class MatchManager : NetworkBehaviour
         // Save a reference to the spawned ball
         soccerBall = ball.GetComponent<SoccerBall>();
 
-        Debug.Log("Match ball spawned");
+        //Debug.Log("Match ball spawned");
 
         StartCoroutine(StartKickoffCountdown());
     }
 
     public void RequestReplay()
     {
-        Debug.Log("Replay button clicked!");
+        //Debug.Log("Replay button clicked");
 
         if (IsServer)
         {
-            Debug.Log("This player is the host.");
+            //Debug.Log("This player is the host");
             ReplayMatch();
         }
         else
         {
-            Debug.Log("Sending replay request to host.");
+            //Debug.Log("Sending replay request to host");
             ReplayMatchRpc();
         }
     }
@@ -255,13 +256,13 @@ public class MatchManager : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void ReplayMatchRpc()
     {
-        Debug.Log("Host received replay request!");
+        //Debug.Log("Host received replay request");
         ReplayMatch();
     }
 
     private void ReplayMatch()
     {
-        Debug.Log("ReplayMatch started!");
+        //Debug.Log("ReplayMatch started");
 
         if (!IsServer || !matchOver.Value)
         {
@@ -282,9 +283,10 @@ public class MatchManager : NetworkBehaviour
 
         StartCoroutine(StartKickoffCountdown());
 
-        Debug.Log("Replaying match!");
+        //Debug.Log("Replaying match");
     }
 
+    // Handles the kickoff countdown keeping players locked until the match is ready to resume
     private IEnumerator StartKickoffCountdown()
     {
         // Lock both players
@@ -292,19 +294,19 @@ public class MatchManager : NetworkBehaviour
 
         // Display 3
         countdownSeconds.Value = 3;
-        Debug.Log("Kickoff in 3...");
+        //Debug.Log("Kickoff in 3...");
 
         yield return new WaitForSeconds(1f);
 
         // Display 2
         countdownSeconds.Value = 2;
-        Debug.Log("Kickoff in 2...");
+        //Debug.Log("Kickoff in 2...");
 
         yield return new WaitForSeconds(1f);
 
         // Display 1
         countdownSeconds.Value = 1;
-        Debug.Log("Kickoff in 1...");
+        //Debug.Log("Kickoff in 1...");
 
         yield return new WaitForSeconds(1f);
 
@@ -321,7 +323,7 @@ public class MatchManager : NetworkBehaviour
         }
 
 
-        Debug.Log("KICKOFF!");
+        //Debug.Log("Kickoff");
 
         // Allow another goal to be processed
         goalBeingProcessed = false;
@@ -347,8 +349,8 @@ public class MatchManager : NetworkBehaviour
         connectedPlayerCount.Value =
             NetworkManager.Singleton.ConnectedClientsIds.Count;
 
-        Debug.Log("Initial player count: " +
-            connectedPlayerCount.Value);
+        //Debug.Log("Initial player count: " +
+            //connectedPlayerCount.Value);
     }
 
     private void UpdatePlayerCount(ulong clientId)
@@ -361,7 +363,7 @@ public class MatchManager : NetworkBehaviour
         connectedPlayerCount.Value =
             NetworkManager.Singleton.ConnectedClientsIds.Count;
 
-        Debug.Log("Connected players: " + connectedPlayerCount.Value);
+        //Debug.Log("Connected players: " + connectedPlayerCount.Value);
     }
 
     public override void OnNetworkDespawn()
@@ -378,7 +380,7 @@ public class MatchManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        Debug.Log("A player left. Closing the room for everyone.");
+        Debug.Log("A player left closing the room for everyone");
 
         OnlineSessionManager sessionManager =
             FindFirstObjectByType<OnlineSessionManager>();

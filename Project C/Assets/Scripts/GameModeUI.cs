@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 
+// Displays the currently selected game mode to both players
 public class GameModeUI : MonoBehaviour
 {
     public MatchManager matchManager;

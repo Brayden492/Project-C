@@ -1,6 +1,7 @@
+using System.Collections;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-using System.Collections;
 
 public class ExplosiveBarrel : NetworkBehaviour
 {
@@ -29,6 +30,10 @@ public class ExplosiveBarrel : NetworkBehaviour
     {
         barrelColliders = GetComponentsInChildren<Collider>();
         barrelRenderers = GetComponentsInChildren<Renderer>();
+        // Remove the root objects renderer so the cylinder stays invisible
+        barrelRenderers = barrelRenderers
+            .Where(rend => rend.gameObject != gameObject)
+            .ToArray();
     }
 
     public override void OnNetworkSpawn()
@@ -48,6 +53,7 @@ public class ExplosiveBarrel : NetworkBehaviour
         UpdateBarrelState(newValue);
     }
 
+    // Updates the barrels visibility and collision across all players based on its availability
     private void UpdateBarrelState(bool available)
     {
         // Enable or disable the barrel's collision
@@ -107,7 +113,7 @@ public class ExplosiveBarrel : NetworkBehaviour
         // Play the visual explosion for everyone
         PlayExplosionEffectRpc();
 
-        Debug.Log("EXPLOSION!");
+        //Debug.Log("EXPLOSION");
 
         // Start the cooldown
         StartCoroutine(BarrelCooldown());
@@ -118,16 +124,17 @@ public class ExplosiveBarrel : NetworkBehaviour
         // Hide and disable the barrel
         isAvailable.Value = false;
 
-        Debug.Log("Barrel recharging...");
+        //Debug.Log("Barrel recharging");
 
         yield return new WaitForSeconds(explosionCooldown);
 
         // Bring the barrel back
         isAvailable.Value = true;
 
-        Debug.Log("Barrel ready!");
+        //Debug.Log("Barrel ready");
     }
 
+    // Plays the explosion particle effect on every players game
     [Rpc(SendTo.Everyone)]
     private void PlayExplosionEffectRpc()
     {

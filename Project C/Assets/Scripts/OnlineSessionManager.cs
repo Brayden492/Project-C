@@ -21,6 +21,7 @@ public class OnlineSessionManager : MonoBehaviour
             HandleClientDisconnect;
     }
 
+    // Handles what happens when a client loses connection to the host
     private void HandleClientDisconnect(ulong clientId)
     {
         // Only handle this on a client, not the host
@@ -35,7 +36,7 @@ public class OnlineSessionManager : MonoBehaviour
             return;
         }
 
-        Debug.Log("Disconnected from the host!");
+        Debug.Log("Disconnected from the host");
 
         currentSession = null;
         roomCodeText.text = "";
@@ -46,11 +47,12 @@ public class OnlineSessionManager : MonoBehaviour
         menuManager.ShowMultiplayer();
     }
 
+    // Creates a two player online session using Unity Relay and generates a room code
     public async void CreateRoom()
     {
         if (!AuthenticationService.Instance.IsSignedIn)
         {
-            Debug.LogError("Player is not signed in yet!");
+            Debug.LogError("Player is not signed in yet");
             return;
         }
 
@@ -64,7 +66,7 @@ public class OnlineSessionManager : MonoBehaviour
             currentSession =
                 await MultiplayerService.Instance.CreateSessionAsync(options);
 
-            Debug.Log("Room created! Code: " + currentSession.Code);
+            Debug.Log("Room created. Code: " + currentSession.Code);
 
             // Host saves the selected game mode to the network
             matchManager.selectedGameMode.Value =
@@ -82,11 +84,12 @@ public class OnlineSessionManager : MonoBehaviour
         }
     }
 
+    // Joins an existing online session using the room code entered by the player
     public async void JoinRoom()
     {
         if (!AuthenticationService.Instance.IsSignedIn)
         {
-            Debug.LogError("Player is not signed in yet!");
+            Debug.LogError("Player is not signed in yet");
             return;
         }
 
@@ -112,20 +115,20 @@ public class OnlineSessionManager : MonoBehaviour
     {
         if (currentSession == null)
         {
-            Debug.LogWarning("No active session to leave!");
+            Debug.LogWarning("No active session to leave");
             return;
         }
 
-        // If this player is the client, ask the host to close the room.
+        // If this player is the client ask the host to close the room.
         if (!NetworkManager.Singleton.IsHost)
         {
-            Debug.Log("Requesting the host to close the room.");
+            Debug.Log("Requesting the host to close the room");
 
             matchManager.RequestHostCloseRoomRpc();
             return;
         }
 
-        // The host leaves, closing the session for everyone.
+        // The host leaves closing the session for everyone
         try
         {
             // Reset match data before closing the room
@@ -154,12 +157,12 @@ public class OnlineSessionManager : MonoBehaviour
     {
         if (currentSession == null)
         {
-            Debug.LogWarning("No room code to copy!");
+            Debug.LogWarning("No room code to copy");
             return;
         }
 
         GUIUtility.systemCopyBuffer = currentSession.Code;
 
-        Debug.Log("Room code copied!");
+        //Debug.Log("Room code copied");
     }
 }

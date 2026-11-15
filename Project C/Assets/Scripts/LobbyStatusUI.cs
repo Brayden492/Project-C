@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 
+// Displays whether each player has connected to the lobby
 public class LobbyStatusUI : MonoBehaviour
 {
     public MatchManager matchManager;
@@ -27,12 +28,12 @@ public class LobbyStatusUI : MonoBehaviour
 
         previousPlayerCount = playerCount;
 
-        // Update Player 1's status
+        // Update Player 1 status
         player1StatusText.text = playerCount >= 1
             ? "Player 1: Connected"
             : "Player 1: Waiting";
 
-        // Update Player 2's status
+        // Update Player 2 status
         player2StatusText.text = playerCount >= 2
             ? "Player 2: Connected"
             : "Player 2: Waiting for player";

@@ -18,6 +18,7 @@ public class GoalCelebration : MonoBehaviour
         celebrationPanel.SetActive(false);
     }
 
+    // Displays the goal celebration and plays the effect at the correct goal and starts a timer to hide the message
     public void ShowGoal(int playerWhoScored)
     {
         // Display which player scored

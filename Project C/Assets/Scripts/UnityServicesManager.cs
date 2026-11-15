@@ -10,6 +10,7 @@ public class UnityServicesManager : MonoBehaviour
         await InitializeUnityServices();
     }
 
+    // Initializes Unity Services and signs the player in so they can use online multiplayer features
     private async Task InitializeUnityServices()
     {
         try
@@ -23,8 +24,8 @@ public class UnityServicesManager : MonoBehaviour
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
             }
 
-            Debug.Log("Unity Services initialized!");
-            Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
+            //Debug.Log("Unity Services initialized");
+            //Debug.Log("Player ID: " + AuthenticationService.Instance.PlayerId);
         }
         catch (System.Exception exception)
         {
